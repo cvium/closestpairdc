@@ -117,7 +117,11 @@ public class ClosestPairDC {
       }*/
       for (int i = pLeft.size() - 1; i > 0; i--) {
          for (int j = 0; j < pRight.size(); j++) {
-            if (Math.abs(pLeft.get(i).x() - pRight.get(j).x()) < delta) {
+            Point pL = pLeft.get(i);
+            Point pR = pRight.get(j);
+            double xDist = Math.abs(pL.x() - pR.x());
+            double yDist = Math.abs(pL.y() - pR.y());
+            if (xDist < delta && yDist < delta) {
                yPrime.add(pRight.get(j));
             }
          }
