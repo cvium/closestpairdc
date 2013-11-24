@@ -23,36 +23,45 @@ public class ClosestPairDC {
       J2DScene scene = J2DScene.createJ2DSceneInFrame();
 
       ArrayList<Point> points = new ArrayList<>();
-      /*points.add(new Point(0, 1));
-      points.add(new Point(2, 1));
-      points.add(new Point(3, 1));
-      points.add(new Point(5, 1));*/
-      points = createItemList(50000);
+      points.add(new Point(2, 7));
+      points.add(new Point(4, 13));
+      points.add(new Point(5, 7));
+      points.add(new Point(10, 5));
+      points.add(new Point(13, 9));
+      points.add(new Point(15, 5));
+      points.add(new Point(17, 7));
+      points.add(new Point(19, 10));
+      points.add(new Point(22, 7));
+      points.add(new Point(25, 10));
+      points.add(new Point(29, 14));
+      points.add(new Point(30, 2));
+      //points = createItemList(50000);
       ClosestPairDC cp = new ClosestPairDC(points);
 
       for (Point point : points) {
-         scene.addShape(new Circle(point, 0.04), Color.BLUE, 0, true);
+         scene.addShape(new Circle(point, 0.4), Color.BLUE, 0, true);
       }
       long start = System.currentTimeMillis();
       ArrayList<Point> closest = cp.findClosest();
-      scene.addShape(new Circle(closest.get(0), 0.04), Color.RED, 0, true);
-      scene.addShape(new Circle(closest.get(1), 0.04), Color.RED, 0, true);
+      scene.addShape(new Circle(closest.get(0), 0.4), Color.RED, 0, true);
+      scene.addShape(new Circle(closest.get(1), 0.4), Color.RED, 0, true);
       long end = System.currentTimeMillis();
 
       System.out.println(end - start);
+      System.out.println(cp.getDist());
    }
 
    public ClosestPairDC(ArrayList<Point> points) {
       this.points = points;
-      this.x = points;
+      this.x = new ArrayList<>(points);
       Collections.sort(x, new sortByX());
-      this.y = points;
+      this.y = new ArrayList<>(points);
       Collections.sort(y, new sortByY());
    }
 
    public ArrayList<Point> findClosest() {
       this.closest = _findClosest(this.x, this.y);
-      this.dist = closest.get(0).getSquaredDistance(closest.get(1));
+      this.dist = dist(closest.get(0), closest.get(1));
       return closest;
    }
 
@@ -80,13 +89,13 @@ public class ClosestPairDC {
          }
          pLeft = _findClosest(xL, yL);
          pRight = _findClosest(xR, yR);
-         return mergePlanes(pLeft, pRight);
+         return mergePlanes(pLeft, pRight, pL, pR);
       }
    }
 
-   private ArrayList<Point> mergePlanes(ArrayList<Point> left, ArrayList<Point> right) {
-      double dLeft = left.get(0).getSquaredDistance(left.get(1));
-      double dRight = right.get(0).getSquaredDistance(right.get(1));
+   private ArrayList<Point> mergePlanes(ArrayList<Point> left, ArrayList<Point> right, ArrayList<Point> pLeft, ArrayList<Point> pRight) {
+      double dLeft = dist(left.get(0), left.get(1));
+      double dRight = dist(right.get(0), right.get(1));
       ArrayList<Point> closest = new ArrayList<>();
       double delta;
 
@@ -100,16 +109,26 @@ public class ClosestPairDC {
          closest.add(right.get(1));
       }
       ArrayList<Point> yPrime = new ArrayList<>();
-      for (int i = 0; i < points.size(); i++) {
+/*      for (int i = 0; i < points.size(); i++) {
          Point p = points.get(i);
          if (left.contains(p) || right.contains(p)) {
             yPrime.add(p);
+         }
+      }*/
+      for (int i = pLeft.size() - 1; i > 0; i--) {
+         for (int j = 0; j < pRight.size(); j++) {
+            if (Math.abs(pLeft.get(i).x() - pRight.get(j).x()) < delta) {
+               yPrime.add(pRight.get(j));
+            }
+         }
+         if (Math.abs(pLeft.get(i).x() - pRight.get(0).x()) < delta) {
+            yPrime.add(pLeft.get(i));
          }
       }
       double dist = delta;
       for (int i = 0; i < yPrime.size(); i++) {
          for (int j = i + 1; j < yPrime.size(); j++) {
-            double tmpDist = yPrime.get(i).getSquaredDistance(yPrime.get(j));
+            double tmpDist = dist(yPrime.get(i), yPrime.get(j));
             if (tmpDist < dist) {
                dist = tmpDist;
                closest.set(0, yPrime.get(i));
@@ -128,8 +147,8 @@ public class ClosestPairDC {
       int size = points.size();
       for(int i=0; i<(size-1); i++) {
          for(int j=(i+1); j<size; j++) {
-            double dist1 = points.get(i).getSquaredDistance(points.get(j));
-            double dist2 = closest.get(0).getSquaredDistance(closest.get(1));
+            double dist1 = dist(points.get(i), points.get(j));
+            double dist2 = dist(closest.get(0), closest.get(1));
             if( dist1 < dist2 ) {
                closest.set(0, points.get(i));
                closest.set(1, points.get(j));
@@ -179,5 +198,9 @@ public class ClosestPairDC {
          list.add(new Point(Math.random()*64 - 32, Math.random()*64 - 32));
       }
       return list;
+   }
+
+   private double dist(Point p1, Point p2) {
+      return Math.sqrt(Math.pow(p2.x() - p1.x(), 2) + Math.pow(p2.y() - p1.y(), 2));
    }
 }
