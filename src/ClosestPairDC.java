@@ -115,7 +115,15 @@ public class ClosestPairDC {
             yPrime.add(p);
          }
       }*/
-      for (int i = pLeft.size() - 1; i > 0; i--) {
+      Point mid = pLeft.get(pLeft.size() - 1);
+      double midX = mid.x();
+      for (int i = 0; i < this.y.size(); i++) {
+         Point p = y.get(i);
+         if (p.x() < midX + delta) {
+            yPrime.add(p);
+         }
+      }
+      /*for (int i = pLeft.size() - 1; i > 0; i--) {
          for (int j = 0; j < pRight.size(); j++) {
             Point pL = pLeft.get(i);
             Point pR = pRight.get(j);
@@ -128,7 +136,7 @@ public class ClosestPairDC {
          if (Math.abs(pLeft.get(i).x() - pRight.get(0).x()) < delta) {
             yPrime.add(pLeft.get(i));
          }
-      }
+      }*/
       double dist = delta;
       for (int i = 0; i < yPrime.size(); i++) {
          for (int j = i + 1; j < yPrime.size(); j++) {
@@ -137,6 +145,9 @@ public class ClosestPairDC {
                dist = tmpDist;
                closest.set(0, yPrime.get(i));
                closest.set(1, yPrime.get(j));
+            }
+            if (j - i == 7) {
+               break;
             }
          }
       }
