@@ -28,7 +28,7 @@ public class ClosestPairDC {
       // debugging.
       for (int i = 0; i < 10000; i++) {
 
-         points = createItemList(100);
+         points = createItemList(500);
          ClosestPairDC cp = new ClosestPairDC(points);
          ArrayList<Point> closest = cp.findClosest();
          ArrayList<Point> p = cp.bruteForce(points);
@@ -229,7 +229,7 @@ public class ClosestPairDC {
    }
 
    /**
-    * Comparator class used for sorting an array of points in x.
+    * Comparator class used for sorting an array of points in x and then in y.
     */
    class sortByX implements Comparator<Point> {
       @Override
@@ -237,7 +237,13 @@ public class ClosestPairDC {
          if (p1.x() < p2.x()) {
             return -1;
          } else if (p1.x() == p2.x()) {
-            return 0;
+            if (p1.y() == p2.y()) {
+               return 0;
+            } else if (p1.y() < p2.y()) {
+               return -1;
+            } else {
+               return 1;
+            }
          } else {
             return 1;
          }
@@ -245,7 +251,7 @@ public class ClosestPairDC {
    }
 
    /**
-    * Comparator class used for sorting an array of points in y.
+    * Comparator class used for sorting an array of points in y and then in x.
     */
    class sortByY implements Comparator<Point> {
       @Override
@@ -253,7 +259,13 @@ public class ClosestPairDC {
          if (p1.y() < p2.y()) {
             return -1;
          } else if (p1.y() == p2.y()) {
-            return 0;
+            if (p1.x() == p2.x()) {
+               return 0;
+            } else if (p1.x() < p2.x()) {
+               return -1;
+            } else {
+               return 1;
+            }
          } else {
             return 1;
          }
