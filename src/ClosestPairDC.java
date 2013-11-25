@@ -22,9 +22,10 @@ public class ClosestPairDC {
    public static J2DScene scene;
 
    public static void main(String[] args) {
-      //scene = J2DScene.createJ2DSceneInFrame();
-      ArrayList<Point> points = new ArrayList<>();
-
+      ArrayList<Point> points;
+      // Runs 10.000 iterations with different points each time. If an iteration returns the wrong closest pair
+      // according to the brute force algorithm, the points are printed in the console and ready to be used in
+      // debugging.
       for (int i = 0; i < 10000; i++) {
 
          points = createItemList(100);
@@ -44,6 +45,7 @@ public class ClosestPairDC {
       }
       System.out.println("IT WORKS");
       /*
+      scene = J2DScene.createJ2DSceneInFrame();
       points = createItemList(10000);
       ClosestPairDC cp = new ClosestPairDC(points);
 
@@ -66,6 +68,10 @@ public class ClosestPairDC {
       */
    }
 
+   /**
+    * Constructor. Sorts the points in x and in y.
+    * @param points
+    */
    public ClosestPairDC(ArrayList<Point> points) {
       this.points = points;
       this.x = new ArrayList<>(points);
@@ -74,16 +80,27 @@ public class ClosestPairDC {
       Collections.sort(y, new sortByY());
    }
 
+   /**
+    * Finds the closest pair of the current points.
+    * @return The closest pair in an arraylist.
+    */
    public ArrayList<Point> findClosest() {
       this.closest = _findClosest(this.x, this.y);
       this.dist = dist(closest.get(0), closest.get(1));
       return closest;
    }
 
+   /**
+    * Recursive helper function for finding the closest pair.
+    * @param x ArrayList of points sorted in x.
+    * @param y ArrayList of points sorted in y.
+    * @return The closest pair of points determined by mergePlanes function.
+    */
    private ArrayList<Point> _findClosest(ArrayList<Point> x, ArrayList<Point> y) {
       int n = x.size();
       ArrayList<Point> pLeft, pRight, xL, xR, pL, pR, yL, yR;
 
+      // Base case
       if (n <= 3) {
          return bruteForce(x);
       }
@@ -95,6 +112,9 @@ public class ClosestPairDC {
          pR = new ArrayList<>(x.subList(n / 2, n));
          xR = new ArrayList<>(x.subList(n / 2, n));
          //scene.addShape(new Line(pL.get(pL.size() - 1), new Point(pL.get(pL.size() - 1).x(), 0)));
+         /*
+         Generates the sorted Y_l and Y_r arrays using binary search.
+          */
          for (int i = 0; i < y.size(); i++) {
             Point p = y.get(i);
             if (Collections.binarySearch(pL, p, new contains()) >= 0) {
@@ -110,12 +130,23 @@ public class ClosestPairDC {
       }
    }
 
+   /**
+    * Merges two planes and finds the closest pair.
+    * @param left The closest pair of points in the left plane.
+    * @param right The closest pair of points in the right plane
+    * @param pLeft All the points in the left plane.
+    * @param y All the points in both planes sorted by y-coordinate.
+    * @return The closest pair in an arraylist.
+    */
    private ArrayList<Point> mergePlanes(ArrayList<Point> left, ArrayList<Point> right, ArrayList<Point> pLeft, ArrayList<Point> y) {
       double dLeft = dist(left.get(0), left.get(1));
       double dRight = dist(right.get(0), right.get(1));
       ArrayList<Point> closest = new ArrayList<>();
       double delta;
 
+      /*
+      Finds the closest pair of the two planes.
+       */
       if (dLeft < dRight) {
          delta = dLeft;
          closest.add(left.get(0));
@@ -127,6 +158,9 @@ public class ClosestPairDC {
       }
       ArrayList<Point> yPrime = new ArrayList<>();
 
+      /*
+      Finds the mid point of the two planes and generates the Y' array while maintaining the sorted order.
+       */
       double mid = pLeft.get(pLeft.size() - 1).x();
       for (Point p : y) {
          double x = p.x();
@@ -134,6 +168,9 @@ public class ClosestPairDC {
             yPrime.add(p);
          }
       }
+      /*
+      Looks for pairs that are closer across the line between the two planes.
+       */
       double dist = delta;
       for (int i = 0; i < yPrime.size(); i++) {
          for (int j = i + 1; j < yPrime.size(); j++) {
@@ -152,6 +189,11 @@ public class ClosestPairDC {
       return closest;
    }
 
+   /**
+    * Find the closest pair of the input points in a brute force fashion
+    * @param points ArrayList<Point> of ProGAL points
+    * @return The closest pair in an arraylist
+    */
    public ArrayList<Point> bruteForce(ArrayList<Point> points) {
       ArrayList<Point> closest = new ArrayList<>();
       closest.add(points.get(0));
@@ -170,14 +212,25 @@ public class ClosestPairDC {
       return closest;
    }
 
+   /**
+    * Returns the distance of the current closest pair.
+    * @return The distance between the closest pair.
+    */
    public double getDist() {
       return dist;
    }
 
+   /**
+    * Returns the closest pair of the points in an ArrayList.
+    * @return ArrayList of the closest pair.
+    */
    public ArrayList<Point> getClosest() {
       return closest;
    }
 
+   /**
+    * Comparator class used for sorting an array of points in x.
+    */
    class sortByX implements Comparator<Point> {
       @Override
       public int compare(Point p1, Point p2) {
@@ -190,6 +243,10 @@ public class ClosestPairDC {
          }
       }
    }
+
+   /**
+    * Comparator class used for sorting an array of points in y.
+    */
    class sortByY implements Comparator<Point> {
       @Override
       public int compare(Point p1, Point p2) {
@@ -203,6 +260,9 @@ public class ClosestPairDC {
       }
    }
 
+   /**
+    * Comparator class used for comparing points that are sorted in x.
+    */
    class contains implements Comparator<Point> {
       @Override
       public int compare(Point p1, Point p2) {
@@ -218,6 +278,11 @@ public class ClosestPairDC {
       }
    }
 
+   /**
+    * Generates n random points.
+    * @param n The number of points.
+    * @return ArrayList of the randomly generated points.
+    */
    static private ArrayList<Point> createItemList(int n) {
       ArrayList<Point> list = new ArrayList<>();
       int i;
@@ -227,6 +292,12 @@ public class ClosestPairDC {
       return list;
    }
 
+   /**
+    * Private function for calculating the distance between two points in the plane.
+    * @param p1 First point.
+    * @param p2 Second point.
+    * @return The distance.
+    */
    private double dist(Point p1, Point p2) {
       return Math.sqrt(Math.pow(p2.x() - p1.x(), 2) + Math.pow(p2.y() - p1.y(), 2));
    }
