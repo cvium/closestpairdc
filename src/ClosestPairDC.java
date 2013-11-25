@@ -23,7 +23,7 @@ public class ClosestPairDC {
       J2DScene scene = J2DScene.createJ2DSceneInFrame();
 
       ArrayList<Point> points = new ArrayList<>();
-      points.add(new Point(2, 7));
+/*      points.add(new Point(2, 7));
       points.add(new Point(4, 13));
       points.add(new Point(5, 7));
       points.add(new Point(10, 5));
@@ -34,17 +34,17 @@ public class ClosestPairDC {
       points.add(new Point(22, 7));
       points.add(new Point(25, 10));
       points.add(new Point(29, 14));
-      points.add(new Point(30, 2));
-      //points = createItemList(50000);
+      points.add(new Point(30, 2));*/
+      points = createItemList(50000);
       ClosestPairDC cp = new ClosestPairDC(points);
 
       for (Point point : points) {
-         scene.addShape(new Circle(point, 0.4), Color.BLUE, 0, true);
+         scene.addShape(new Circle(point, 0.04), Color.BLUE, 0, true);
       }
       long start = System.currentTimeMillis();
       ArrayList<Point> closest = cp.findClosest();
-      scene.addShape(new Circle(closest.get(0), 0.4), Color.RED, 0, true);
-      scene.addShape(new Circle(closest.get(1), 0.4), Color.RED, 0, true);
+      scene.addShape(new Circle(closest.get(0), 0.04), Color.RED, 0, true);
+      scene.addShape(new Circle(closest.get(1), 0.04), Color.RED, 0, true);
       long end = System.currentTimeMillis();
 
       System.out.println(end - start);
@@ -73,27 +73,31 @@ public class ClosestPairDC {
          return bruteForce(x);
       }
       else {
+         //ArrayList<Point> Y = new ArrayList<>();
          yL = new ArrayList<>();
          yR = new ArrayList<>();
          pL = new ArrayList<>(x.subList(0, n / 2));
          xL = new ArrayList<>(x.subList(0, n / 2));
-         pR = new ArrayList<>(x.subList(n / 2, n));
+         //pR = new ArrayList<>(x.subList(n / 2, n));
          xR = new ArrayList<>(x.subList(n / 2, n));
-         for (int i = 0; i < n; i++) {
-            if (pL.contains(y.get(i))) {
-               yL.add(y.get(i));
+         for (int i = 0; i < y.size(); i++) {
+            Point p = y.get(i);
+            if (Collections.binarySearch(y, p, new contains()) >= 0) {
+               yL.add(p);
+               //Y.add(p);
             }
             else {
-               yR.add(y.get(i));
+               yR.add(p);
+               //Y.add(p);
             }
          }
          pLeft = _findClosest(xL, yL);
          pRight = _findClosest(xR, yR);
-         return mergePlanes(pLeft, pRight, pL, pR);
+         return mergePlanes(pLeft, pRight, pL, y);
       }
    }
 
-   private ArrayList<Point> mergePlanes(ArrayList<Point> left, ArrayList<Point> right, ArrayList<Point> pLeft, ArrayList<Point> pRight) {
+   private ArrayList<Point> mergePlanes(ArrayList<Point> left, ArrayList<Point> right, ArrayList<Point> pLeft, ArrayList<Point> y) {
       double dLeft = dist(left.get(0), left.get(1));
       double dRight = dist(right.get(0), right.get(1));
       ArrayList<Point> closest = new ArrayList<>();
@@ -115,11 +119,10 @@ public class ClosestPairDC {
             yPrime.add(p);
          }
       }*/
-      Point mid = pLeft.get(pLeft.size() - 1);
-      double midX = mid.x();
-      for (int i = 0; i < this.y.size(); i++) {
-         Point p = y.get(i);
-         if (p.x() < midX + delta) {
+      double mid = pLeft.get(pLeft.size() - 1).x();
+      for (Point p : y) {
+         double x = p.x();
+         if (x >= mid - delta && x <= mid + delta) {
             yPrime.add(p);
          }
       }
@@ -140,14 +143,14 @@ public class ClosestPairDC {
       double dist = delta;
       for (int i = 0; i < yPrime.size(); i++) {
          for (int j = i + 1; j < yPrime.size(); j++) {
-            double tmpDist = dist(yPrime.get(i), yPrime.get(j));
+            Point p1 = yPrime.get(i);
+            Point p2 = yPrime.get(j);
+            if(Math.abs(p1.y() - p2.y()) >= dist ) break;
+            double tmpDist = dist(p1, p2);
             if (tmpDist < dist) {
                dist = tmpDist;
-               closest.set(0, yPrime.get(i));
-               closest.set(1, yPrime.get(j));
-            }
-            if (j - i == 7) {
-               break;
+               closest.set(0, p1);
+               closest.set(1, p2);
             }
          }
       }
@@ -206,16 +209,32 @@ public class ClosestPairDC {
       }
    }
 
+   class contains implements Comparator<Point> {
+      @Override
+      public int compare(Point p1, Point p2) {
+         if (p1.y() == p2.y()) {
+            if (p1.x() == p2.x()) {
+               return 0;
+            } else {
+               return p1.x() < p2.x() ? -1 : 1;
+            }
+         } else {
+            return p1.y() < p2.y() ? -1 : 1;
+         }
+      }
+   }
+
    static private ArrayList<Point> createItemList(int n) {
       ArrayList<Point> list = new ArrayList<>();
       int i;
       for(i=0; i<n; i++) {
-         list.add(new Point(Math.random()*64 - 32, Math.random()*64 - 32));
+         list.add(new Point(Math.random()*12 - 6, Math.random()*12- 6));
       }
       return list;
    }
 
    private double dist(Point p1, Point p2) {
+      //return p1.getSquaredDistance(p2);
       return Math.sqrt(Math.pow(p2.x() - p1.x(), 2) + Math.pow(p2.y() - p1.y(), 2));
    }
 }
