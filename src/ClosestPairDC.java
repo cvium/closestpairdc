@@ -1,4 +1,5 @@
 import ProGAL.geom2d.Circle;
+import ProGAL.geom2d.Line;
 import ProGAL.geom2d.Point;
 import ProGAL.geom2d.viewer.J2DScene;
 
@@ -18,24 +19,32 @@ public class ClosestPairDC {
    private double dist;
    private ArrayList<Point> x;
    private ArrayList<Point> y;
+   public static J2DScene scene;
 
    public static void main(String[] args) {
-      J2DScene scene = J2DScene.createJ2DSceneInFrame();
-
+      //scene = J2DScene.createJ2DSceneInFrame();
       ArrayList<Point> points = new ArrayList<>();
-/*      points.add(new Point(2, 7));
-      points.add(new Point(4, 13));
-      points.add(new Point(5, 7));
-      points.add(new Point(10, 5));
-      points.add(new Point(13, 9));
-      points.add(new Point(15, 5));
-      points.add(new Point(17, 7));
-      points.add(new Point(19, 10));
-      points.add(new Point(22, 7));
-      points.add(new Point(25, 10));
-      points.add(new Point(29, 14));
-      points.add(new Point(30, 2));*/
-      points = createItemList(50000);
+
+      for (int i = 0; i < 10000; i++) {
+
+         points = createItemList(100);
+         ClosestPairDC cp = new ClosestPairDC(points);
+         ArrayList<Point> closest = cp.findClosest();
+         ArrayList<Point> p = cp.bruteForce(points);
+         double dist = p.get(0).getSquaredDistance(p.get(1));
+         if (closest.get(0).getSquaredDistance(closest.get(1)) != dist) {
+            System.out.println(Math.sqrt(closest.get(0).getSquaredDistance(closest.get(1))));
+            System.out.println(Math.sqrt(dist));
+            for (Point pt : points) {
+               System.out.println("points.add(new Point(" + pt.x() + ", " + pt.y() + "));");
+            }
+            break;
+         }
+         assert (closest.get(0).getSquaredDistance(closest.get(1)) == dist);
+      }
+      System.out.println("IT WORKS");
+      /*
+      points = createItemList(10000);
       ClosestPairDC cp = new ClosestPairDC(points);
 
       for (Point point : points) {
@@ -49,6 +58,12 @@ public class ClosestPairDC {
 
       System.out.println(end - start);
       System.out.println(cp.getDist());
+      ArrayList<Point> p = cp.bruteForce(points);
+      double dist = Math.sqrt(p.get(0).getSquaredDistance(p.get(1)));
+      System.out.println(dist);
+      scene.addShape(new Circle(p.get(0), 0.04), Color.GREEN, 0, true);
+      scene.addShape(new Circle(p.get(1), 0.04), Color.GREEN, 0, true);
+      */
    }
 
    public ClosestPairDC(ArrayList<Point> points) {
@@ -73,22 +88,20 @@ public class ClosestPairDC {
          return bruteForce(x);
       }
       else {
-         //ArrayList<Point> Y = new ArrayList<>();
          yL = new ArrayList<>();
          yR = new ArrayList<>();
-         pL = new ArrayList<>(x.subList(0, n / 2));
-         xL = new ArrayList<>(x.subList(0, n / 2));
-         //pR = new ArrayList<>(x.subList(n / 2, n));
+         pL = new ArrayList<>(x.subList(0, n / 2 + 1));
+         xL = new ArrayList<>(x.subList(0, n / 2 + 1));
+         pR = new ArrayList<>(x.subList(n / 2, n));
          xR = new ArrayList<>(x.subList(n / 2, n));
+         //scene.addShape(new Line(pL.get(pL.size() - 1), new Point(pL.get(pL.size() - 1).x(), 0)));
          for (int i = 0; i < y.size(); i++) {
             Point p = y.get(i);
-            if (Collections.binarySearch(y, p, new contains()) >= 0) {
+            if (Collections.binarySearch(pL, p, new contains()) >= 0) {
                yL.add(p);
-               //Y.add(p);
             }
-            else {
+            if (Collections.binarySearch(pR, p, new contains()) >= 0) {
                yR.add(p);
-               //Y.add(p);
             }
          }
          pLeft = _findClosest(xL, yL);
@@ -113,39 +126,20 @@ public class ClosestPairDC {
          closest.add(right.get(1));
       }
       ArrayList<Point> yPrime = new ArrayList<>();
-/*      for (int i = 0; i < points.size(); i++) {
-         Point p = points.get(i);
-         if (left.contains(p) || right.contains(p)) {
-            yPrime.add(p);
-         }
-      }*/
+
       double mid = pLeft.get(pLeft.size() - 1).x();
       for (Point p : y) {
          double x = p.x();
-         if (x >= mid - delta && x <= mid + delta) {
+         if (x > mid - delta && x < mid + delta) {
             yPrime.add(p);
          }
       }
-      /*for (int i = pLeft.size() - 1; i > 0; i--) {
-         for (int j = 0; j < pRight.size(); j++) {
-            Point pL = pLeft.get(i);
-            Point pR = pRight.get(j);
-            double xDist = Math.abs(pL.x() - pR.x());
-            double yDist = Math.abs(pL.y() - pR.y());
-            if (xDist < delta && yDist < delta) {
-               yPrime.add(pRight.get(j));
-            }
-         }
-         if (Math.abs(pLeft.get(i).x() - pRight.get(0).x()) < delta) {
-            yPrime.add(pLeft.get(i));
-         }
-      }*/
       double dist = delta;
       for (int i = 0; i < yPrime.size(); i++) {
          for (int j = i + 1; j < yPrime.size(); j++) {
             Point p1 = yPrime.get(i);
             Point p2 = yPrime.get(j);
-            if(Math.abs(p1.y() - p2.y()) >= dist ) break;
+            if(Math.abs(p1.y() - p2.y()) > dist ) break;
             double tmpDist = dist(p1, p2);
             if (tmpDist < dist) {
                dist = tmpDist;
@@ -158,7 +152,7 @@ public class ClosestPairDC {
       return closest;
    }
 
-   private ArrayList<Point> bruteForce(ArrayList<Point> points) {
+   public ArrayList<Point> bruteForce(ArrayList<Point> points) {
       ArrayList<Point> closest = new ArrayList<>();
       closest.add(points.get(0));
       closest.add(points.get(1));
@@ -212,14 +206,14 @@ public class ClosestPairDC {
    class contains implements Comparator<Point> {
       @Override
       public int compare(Point p1, Point p2) {
-         if (p1.y() == p2.y()) {
-            if (p1.x() == p2.x()) {
+         if (p1.x() == p2.x()) {
+            if (p1.y() == p2.y()) {
                return 0;
             } else {
-               return p1.x() < p2.x() ? -1 : 1;
+               return p1.y() < p2.y() ? -1 : 1;
             }
          } else {
-            return p1.y() < p2.y() ? -1 : 1;
+            return p1.x() < p2.x() ? -1 : 1;
          }
       }
    }
@@ -234,7 +228,6 @@ public class ClosestPairDC {
    }
 
    private double dist(Point p1, Point p2) {
-      //return p1.getSquaredDistance(p2);
       return Math.sqrt(Math.pow(p2.x() - p1.x(), 2) + Math.pow(p2.y() - p1.y(), 2));
    }
 }
