@@ -21,14 +21,18 @@ public class ClosestPairDC {
    private ArrayList<Point> y;
    public static J2DScene scene;
 
-   public static void main(String[] args) {
+   /**
+    * Runs a user specified number of iterations with n different points each time. If an iteration returns the
+    * wrong closest pair according to the brute force algorithm, the points are printed in the console and
+    * ready to be used in debugging.
+    * @param iterations Number of iterations
+    * @param numberOfPoints Number of points
+    */
+   public static void test(int iterations, int numberOfPoints) {
       ArrayList<Point> points;
-      // Runs 10.000 iterations with different points each time. If an iteration returns the wrong closest pair
-      // according to the brute force algorithm, the points are printed in the console and ready to be used in
-      // debugging.
-      for (int i = 0; i < 10000; i++) {
+      for (int i = 0; i < iterations; i++) {
 
-         points = createItemList(500);
+         points = createItemList(numberOfPoints);
          ClosestPairDC cp = new ClosestPairDC(points);
          ArrayList<Point> closest = cp.findClosest();
          ArrayList<Point> p = cp.bruteForce(points);
@@ -44,14 +48,24 @@ public class ClosestPairDC {
          assert (closest.get(0).getSquaredDistance(closest.get(1)) == dist);
       }
       System.out.println("IT WORKS");
-      /*
+   }
+
+   /**
+    * Shows the closest pair using ProGAL's J2DScene. If "bruteforce" is true, it will run both algorithms
+    * on the same set of data.
+    * @param bruteforce Run the bruteforce algorithm or not.
+    * @param numberOfPoints Number of points in the simulation.
+    */
+   private static void show(boolean bruteforce, int numberOfPoints) {
+      ArrayList<Point> points;
       scene = J2DScene.createJ2DSceneInFrame();
-      points = createItemList(10000);
+      points = createItemList(numberOfPoints);
       ClosestPairDC cp = new ClosestPairDC(points);
 
       for (Point point : points) {
          scene.addShape(new Circle(point, 0.04), Color.BLUE, 0, true);
       }
+      scene.autoZoom();
       long start = System.currentTimeMillis();
       ArrayList<Point> closest = cp.findClosest();
       scene.addShape(new Circle(closest.get(0), 0.04), Color.RED, 0, true);
@@ -60,12 +74,56 @@ public class ClosestPairDC {
 
       System.out.println(end - start);
       System.out.println(cp.getDist());
-      ArrayList<Point> p = cp.bruteForce(points);
-      double dist = Math.sqrt(p.get(0).getSquaredDistance(p.get(1)));
-      System.out.println(dist);
-      scene.addShape(new Circle(p.get(0), 0.04), Color.GREEN, 0, true);
-      scene.addShape(new Circle(p.get(1), 0.04), Color.GREEN, 0, true);
-      */
+      if (bruteforce) {
+         ArrayList<Point> p = cp.bruteForce(points);
+         double dist = Math.sqrt(p.get(0).getSquaredDistance(p.get(1)));
+         System.out.println(dist);
+         scene.addShape(new Circle(p.get(0), 0.04), Color.GREEN, 0, true);
+         scene.addShape(new Circle(p.get(1), 0.04), Color.GREEN, 0, true);
+         System.out.println(cp.getDist() == dist);
+      }
+   }
+
+   /**
+    * Finds the closest pair and prints the distance and the time it took to stdout.
+    * @param numberOfPoints Number of points.
+    */
+   private static void find(int numberOfPoints) {
+      ArrayList<Point> points;
+      points = createItemList(numberOfPoints);
+      ClosestPairDC cp = new ClosestPairDC(points);
+
+      long start = System.currentTimeMillis();
+      cp.findClosest();
+      long end = System.currentTimeMillis();
+
+      System.out.println(end - start);
+      System.out.println(cp.getDist());
+   }
+
+   /**
+    * Takes 2-3 inputs. First input is the choice of test.
+    * "test" runs i iterations on n points.
+    * "show" shows the points in ProGAL along with the bruteforce result on n points ie. "show true 100"
+    * "find" prints the cpu time for finding the closest pair of the n points and the distance.
+    * @param args
+    */
+   public static void main(String[] args) {
+      if (args.length < 2) {
+         System.out.println("Not enough input arguments.");
+      } else {
+         switch(args[0]) {
+            case "test":
+               test(Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+               break;
+            case "show":
+               show(Boolean.parseBoolean(args[1]), Integer.parseInt(args[2]));
+               break;
+            case "find":
+               find(Integer.parseInt(args[1]));
+               break;
+         }
+      }
    }
 
    /**
